@@ -1,0 +1,231 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ------------------------------------------------------
+
+enum Role {
+  ADMIN
+  CUSTOMER
+  HOUSEKEEPER
+}
+
+model User {
+  id                      String                   @id @default(uuid())
+  email                   String                   @unique
+  password                String
+  role                    Role
+  housekeeperInformations HousekeeperInformations?
+  address                 Address[]
+  bankAccounts            BankAccount[]
+}
+
+// ------------------------------------------------------
+
+model Media {
+  id       String @id @default(uuid())
+  filename String
+  mimetype String
+  size     Int
+  path     String
+
+  housekeeperDocuments HousekeeperDocument?
+  housekeeperAvatar    HousekeeperAvatar?
+  housekeeperInsurance HousekeeperInsurance?
+}
+
+// ------------------------------------------------------
+
+model Country {
+  id               String  @id @default(uuid())
+  countryName      String
+  countryCode      String
+  isoAlpha3        String
+  isoNumeric       Int
+  fipsCode         String?
+  continent        String
+  continentName    String
+  currencyCode     String?
+  postalCodeFormat String?
+  capital          String?
+  languages        String?
+  population       Int
+}
+
+// ------------------------------------------------------
+
+enum HousekeeperStatus {
+  IN_PROGRESS
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model HousekeeperInformations {
+  id                         Int                           @id @default(autoincrement())
+  firstName                  String
+  lastName                   String
+  dateOfBirth                DateTime                      @db.Date
+  nationality                String
+  phoneNumber                String
+  companyName                String?
+  siretNumber                String?
+  geographicalAreas          HousekeeperGeographicalArea[]
+  hasVehicle                 Boolean?
+  hasCleaningEquipment       Boolean?
+  documents                  HousekeeperDocument[]
+  avatar                     HousekeeperAvatar?
+  hasInsurance               Boolean?
+  insurance                  HousekeeperInsurance?
+  isDeclaredPersonalService  Boolean?
+  personalService            HousekeeperPersonalService?
+  businessCustomersAllowed   Boolean                       @default(false)
+  individualCustomersAllowed Boolean                       @default(false)
+  minimumServiceDuration     Float?
+  weekdayRate                Float?
+  sundayHolidayRate          Float?
+  nightRate                  Float?
+  cleaningEquipmentExtraRate Float?
+  vatRate                    Float?
+  submissionStep             Int?
+  status                     HousekeeperStatus             @default(IN_PROGRESS)
+  services                   HousekeepersOnServices[]
+
+  companyAddress   Address? @relation(fields: [companyAddressId], references: [id])
+  companyAddressId String?  @unique
+  owner            User     @relation(fields: [ownerId], references: [id])
+  ownerId          String   @unique
+}
+
+// ------------------------------------------------------
+
+model HousekeeperInsurance {
+  id              Int     @id @default(autoincrement())
+  societaryNumber String?
+  companyName     String?
+
+  certificateMedia   Media?  @relation(fields: [certificateMediaId], references: [id])
+  certificateMediaId String? @unique
+
+  housekeeperInformations   HousekeeperInformations @relation(fields: [housekeeperInformationsId], references: [id])
+  housekeeperInformationsId Int                     @unique
+}
+
+// ------------------------------------------------------
+
+model HousekeeperPersonalService {
+  id              Int       @id @default(autoincrement())
+  sapNumber       String?
+  startOfActivity DateTime? @db.Date
+
+  housekeeperInformations   HousekeeperInformations @relation(fields: [housekeeperInformationsId], references: [id])
+  housekeeperInformationsId Int                     @unique
+}
+
+// ------------------------------------------------------
+
+model HousekeeperService {
+  key             String  @id
+  text            String
+  availableForSap Boolean @default(false)
+
+  services HousekeepersOnServices[]
+}
+
+model HousekeepersOnServices {
+  housekeeperService    HousekeeperService @relation(fields: [housekeeperServiceKey], references: [key])
+  housekeeperServiceKey String
+
+  housekeeperInformations   HousekeeperInformations @relation(fields: [housekeeperInformationsId], references: [id])
+  housekeeperInformationsId Int
+
+  @@id([housekeeperServiceKey, housekeeperInformationsId])
+}
+
+// ------------------------------------------------------
+
+model HousekeeperGeographicalArea {
+  id         Int    @id @default(autoincrement())
+  postalCode String
+
+  housekeeperInformations   HousekeeperInformations @relation(fields: [housekeeperInformationsId], references: [id])
+  housekeeperInformationsId Int
+}
+
+// ------------------------------------------------------
+
+model HousekeeperAvatar {
+  id      Int    @id @default(autoincrement())
+  media   Media  @relation(fields: [mediaId], references: [id])
+  mediaId String @unique
+
+  housekeeperInformations   HousekeeperInformations @relation(fields: [housekeeperInformationsId], references: [id])
+  housekeeperInformationsId Int                     @unique
+}
+
+// ------------------------------------------------------
+
+enum HousekeeperDocumentType {
+  IDENTITY_CARD_FRONT
+  IDENTITY_CARD_BACK
+  KBIS
+}
+
+enum HousekeeperDocumentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model HousekeeperDocument {
+  id     Int                       @id @default(autoincrement())
+  type   HousekeeperDocumentType
+  status HousekeeperDocumentStatus @default(PENDING)
+
+  media   Media  @relation(fields: [mediaId], references: [id])
+  mediaId String @unique
+
+  housekeeperInformations   HousekeeperInformations @relation(fields: [housekeeperInformationsId], references: [id])
+  housekeeperInformationsId Int
+
+  @@unique([housekeeperInformationsId, type])
+}
+
+// ------------------------------------------------------
+
+model BankAccount {
+  id               String  @id @default(uuid())
+  accountOwnerName String
+  IBAN             String
+  BIC              String
+  mandateId        String?
+  isPrimary        Boolean @default(false)
+
+  ownerAddress   Address @relation(fields: [ownerAddressId], references: [id])
+  ownerAddressId String
+  owner          User    @relation(fields: [ownerId], references: [id])
+  ownerId        String
+}
+
+// ------------------------------------------------------
+
+model Address {
+  id             String  @id @default(uuid())
+  address        String
+  addressDetails String?
+  city           String
+  postalCode     String
+  country        String
+
+  owner   User   @relation(fields: [ownerId], references: [id])
+  ownerId String
+
+  HousekeeperInformations HousekeeperInformations?
+  BankAccount             BankAccount[]
+}
