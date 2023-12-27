@@ -1,0 +1,5 @@
+type PageInfo @isPublic {
+  startCursor: String
+  endCursor: String
+  totalCount: Int!
+}

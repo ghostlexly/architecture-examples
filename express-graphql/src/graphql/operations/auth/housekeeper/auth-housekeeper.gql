@@ -1,0 +1,16 @@
+# ---------------------------------------------------------
+# Authenticate Housekeepers
+# ---------------------------------------------------------
+
+input AuthHousekeeperInput {
+  email: String!
+  password: String!
+}
+
+type AuthHousekeeperPayload @isPublic {
+  access_token: String!
+}
+
+type Mutation {
+  authHousekeeper(input: AuthHousekeeperInput): AuthHousekeeperPayload!
+}

@@ -1,0 +1,7 @@
+enum Roles {
+  ADMIN
+  CUSTOMER
+  HOUSEKEEPER
+}
+
+directive @roles(role: Roles) on OBJECT | FIELD_DEFINITION

@@ -1,0 +1,5 @@
+{
+  "defaultProduct": "chrome",
+  "executablePath": "/usr/bin/chromium-browser",
+  "skipDownload": true
+}

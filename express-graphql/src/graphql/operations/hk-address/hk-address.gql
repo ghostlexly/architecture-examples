@@ -1,0 +1,27 @@
+type HousekeeperAddress {
+  id: ID
+  address: String!
+  addressDetails: String
+  city: String
+  postalCode: String
+  country: String
+  ownerId: String
+  informations: HousekeeperInformation
+}
+
+type HousekeeperAddressesEdge {
+  node: HousekeeperAddress
+  cursor: String!
+}
+
+type HousekeeperAddressesConnection {
+  edges: [HousekeeperAddressesEdge]
+  pageInfo: PageInfo!
+}
+
+type Query {
+  housekeeperAddresses(
+    first: Int
+    after: String
+  ): HousekeeperAddressesConnection
+}

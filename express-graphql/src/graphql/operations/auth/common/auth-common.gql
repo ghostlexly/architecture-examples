@@ -1,0 +1,13 @@
+# ---------------------------------------------------------
+# Me - logged in user informations
+# ---------------------------------------------------------
+
+type MePayload {
+  id: String!
+  email: String!
+  role: String!
+}
+
+type Query {
+  me: MePayload!
+}

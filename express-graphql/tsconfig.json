@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES5", // develop on this tech (allow await, imports etc.)
+    "module": "commonjs", // transpile to commonjs on build
+
+    "rootDir": ".", // set root dir for building
+    "outDir": "dist", // set output dir for build files
+    "baseUrl": ".", // set base url for paths resolvers
+    "paths": {
+      // paths resolvers
+      "@/*": ["*"]
+    },
+
+    "typeRoots": ["src/types", "node_modules/@types"], // custom types paths
+
+    "esModuleInterop": true,
+    "noImplicitAny": false, // allow implicit any types
+    "sourceMap": true,
+    "resolveJsonModule": true, // allow .json files imports
+    "emitDecoratorMetadata": true, // allow reflect-metadata
+    "experimentalDecorators": true, // allow reflect-metadata
+    "skipLibCheck": true, // ignore node_modules
+    "strictNullChecks": true // allow null checks for Zod infers to work
+  },
+  "include": ["./.env", "**/*.ts", "**/*.tsx"],
+  "ts-node": {
+    "require": ["tsconfig-paths/register"]
+  }
+}
