@@ -1,0 +1,49 @@
+type HousekeeperInformation {
+  id: ID!
+  firstName: String
+  lastName: String
+  dateOfBirth: Float
+  nationality: String
+  phoneNumber: String
+  companyAddress: HousekeeperAddress
+  submissionStep: Int
+}
+
+# --------------------------------------------
+
+type HousekeeperInformationConnection {
+  nodes: [HousekeeperInformation!]!
+  pageInfo: PageInfo!
+}
+
+# --------------------------------------------
+
+type Query {
+  housekeeperInformations(
+    first: Int
+    after: String
+  ): HousekeeperInformationConnection!
+}
+
+# --------------------------------------------
+
+input CreateHousekeeperInformationsInput {
+  firstName: String!
+  lastName: String!
+  phoneNumber: String!
+  dateOfBirth: String! # I will receive dayjs's "toISOString()" from the client
+  nationality: String!
+}
+
+# --------------------------------------------
+
+type Mutation {
+  createHousekeeperInformations(
+    input: CreateHousekeeperInformationsInput
+  ): HousekeeperInformation!
+
+  updateHousekeeperInformations(
+    id: Int!
+    input: CreateHousekeeperInformationsInput
+  ): HousekeeperInformation!
+}

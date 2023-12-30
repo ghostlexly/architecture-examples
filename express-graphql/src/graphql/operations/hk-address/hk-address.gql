@@ -9,13 +9,8 @@ type HousekeeperAddress {
   informations: HousekeeperInformation
 }
 
-type HousekeeperAddressesEdge {
-  node: HousekeeperAddress
-  cursor: String!
-}
-
 type HousekeeperAddressesConnection {
-  edges: [HousekeeperAddressesEdge]
+  nodes: [HousekeeperAddress!]!
   pageInfo: PageInfo!
 }
 
@@ -23,5 +18,5 @@ type Query {
   housekeeperAddresses(
     first: Int
     after: String
-  ): HousekeeperAddressesConnection
+  ): HousekeeperAddressesConnection!
 }

@@ -1,0 +1,19 @@
+type Country {
+  id: ID!
+  countryName: String!
+  countryCode: String!
+  isoAlpha3: String!
+  isoNumeric: Int!
+  fipsCode: String
+  continent: String!
+  continentName: String!
+  currencyCode: String
+  postalCodeFormat: String
+  capital: String
+  languages: String
+  population: Int!
+}
+
+type Query {
+  countries: [Country!]!
+}

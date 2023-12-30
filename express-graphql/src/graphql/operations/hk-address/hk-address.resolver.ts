@@ -1,6 +1,6 @@
-import { prisma } from "@/src/providers/database/prisma";
 import { GraphQLError } from "graphql";
 import { GraphQLContext } from "../../context";
+import { prisma } from "@/src/providers/database/prisma";
 
 const housekeeperAddressResolver = {
   // ------------------------------------------------------------
@@ -8,16 +8,13 @@ const housekeeperAddressResolver = {
   // ------------------------------------------------------------
   HousekeeperAddress: {
     informations: async (parent, args, ctx: GraphQLContext, info) => {
-      const data = await prisma.housekeeperAddress.findFirst({
-        select: {
-          informations: true,
-        },
-        where: {
-          id: parent.id,
-        },
-      });
-
-      return data?.informations;
+      return prisma.housekeeperAddress
+        .findFirst({
+          where: {
+            id: parent.id,
+          },
+        })
+        .informations();
     },
   },
 
@@ -33,27 +30,18 @@ const housekeeperAddressResolver = {
         throw new GraphQLError("Unauthorized");
       }
 
-      const [data, count] = await prisma.housekeeperAddress.findManyAndCount({
+      const nodes = await prisma.housekeeperAddress.findMany({
         // pagination
-        take: 4,
+        take: first && first > 100 ? 100 : first || 20,
         skip: after ? 1 : 0, // skip the first item if after is defined
         cursor: after ? { id: after } : undefined,
       });
 
-      const edges = data.map((item) => {
-        return {
-          cursor: item.id,
-          node: item,
-        };
-      });
-
       return {
-        edges: edges,
+        nodes: nodes,
 
         pageInfo: {
-          startCursor: edges[0]?.cursor,
-          endCursor: edges[edges.length - 1]?.cursor,
-          totalCount: count,
+          nextPageCursor: nodes[nodes.length - 1]?.id,
         },
       };
     },
