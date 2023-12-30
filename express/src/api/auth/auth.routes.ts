@@ -1,26 +1,19 @@
-import express from "express";
-import authController from "./auth.controller";
 import { strictThrottler } from "@/src/middlewares/throttler.middleware";
-import { validateSchema } from "@/src/middlewares/validate.middleware";
-import loginSchema from "./schemas/login.schema";
-import registerSchema from "./schemas/register.schema";
+import express from "express";
+import commonAuthController from "./common/common-auth.controller";
+import customerAuthController from "./customer/customer-auth.controller";
+import housekeeperAuthController from "./housekeeper/housekeeper-auth.controller";
 
 const router = express.Router();
 
 router.post(
-  "/login",
-  strictThrottler,
-  validateSchema(loginSchema),
-  authController.login
+  "/housekeeper/login",
+  [strictThrottler],
+  housekeeperAuthController.login
 );
 
-router.get("/me", authController.me);
+router.post("/customer/login", [strictThrottler], customerAuthController.login);
 
-router.post(
-  "/register",
-  strictThrottler,
-  validateSchema(registerSchema),
-  authController.register
-);
+router.get("/me", [], commonAuthController.getMe);
 
 export default router;

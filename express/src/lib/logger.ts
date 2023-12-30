@@ -1,13 +1,14 @@
 import { createLogger, format, transports, config } from "winston";
-const { combine, timestamp, label, printf, json } = format;
 
-const customFormat = printf((info) => {
+const customFormat = format.printf((info) => {
   // transform json error messages to string if it's needed
   if (typeof info.message === "object") {
-    info.message = "Object received at the logger: \n" + JSON.stringify(info.message, null, 2);
+    info.message =
+      "Object received at the logger: \n" +
+      JSON.stringify(info.message, null, 2);
   }
 
-  return `${info.timestamp} ${info.level}: ${info.message}`;
+  return `${info.timestamp} [${info.level}]: ${info.message}`;
 });
 
 const logger = createLogger({
@@ -16,14 +17,19 @@ const logger = createLogger({
     new transports.File({
       level: "warn",
       filename: "./logs/app.log",
-      format: combine(timestamp(), customFormat),
+      format: format.combine(format.json(), format.timestamp(), customFormat),
       handleExceptions: true,
       maxsize: 5242880, // 5MB
       maxFiles: 5,
     }),
     new transports.Console({
       level: "debug",
-      format: combine(timestamp(), customFormat),
+      format: format.combine(
+        format.colorize(),
+        format.json(),
+        format.timestamp(),
+        customFormat
+      ),
       handleExceptions: true,
     }),
   ],

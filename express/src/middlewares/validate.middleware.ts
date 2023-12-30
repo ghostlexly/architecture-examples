@@ -48,7 +48,7 @@ const validate = async <TBody, TParams, TQuery>({
 }: ValidateProps<TBody, TParams, TQuery>): Promise<
   ValidateResult<TBody, TParams, TQuery>
 > => {
-  let output: { body: any; params: any; query: any } = {
+  const output: { body: any; params: any; query: any } = {
     body: {},
     params: {},
     query: {},
@@ -80,9 +80,7 @@ const validate = async <TBody, TParams, TQuery>({
   } catch (zodError) {
     throw httpError(400, {
       json: {
-        message: `Les params de la page comportent ${
-          Object.values(zodError.errors).length
-        } erreur(s). Veuillez les corriger pour continuer.`,
+        message: zodError.errors[0].message,
         errors: zodError.errors.map((e) => ({
           code: e.code,
           message: e.message,
@@ -99,9 +97,7 @@ const validate = async <TBody, TParams, TQuery>({
   } catch (zodError) {
     throw httpError(400, {
       json: {
-        message: `Les query de la page comportent ${
-          Object.values(zodError.errors).length
-        } erreur(s). Veuillez les corriger pour continuer.`,
+        message: zodError.errors[0].message,
         errors: zodError.errors.map((e) => ({
           code: e.code,
           message: e.message,

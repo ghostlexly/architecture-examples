@@ -4,7 +4,7 @@ import { prisma } from "../../providers/database/prisma";
 module.exports = async (job: SandboxedJob) => {
   // Do something with job
   console.log("sandboxed");
-  const data = await prisma.user.findMany();
+  const data = await prisma.housekeeper.findMany();
   console.log(data);
 
   let operations = 0;

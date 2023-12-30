@@ -14,6 +14,14 @@ type StoreProps = {
   allowedTypes: string[];
 };
 
+type DestroyProps = {
+  media: Media;
+};
+
+type GetMetaInformationsProps = {
+  media: Media;
+};
+
 /**
  * Store the file in the database and in the filesystem
  */
@@ -54,21 +62,31 @@ const store = async ({ file, allowedTypes }: StoreProps) => {
     }
   });
 
-  // Write to the database
-  const media = await prisma.media.create({
-    data: {
-      filename: normalizedFileName,
-      mimetype: file.mimetype,
-      size: file.size,
-      path: path.join(uploadDir, normalizedFileName),
-    },
+  const media = prisma.$transaction(async (prisma) => {
+    // Write to the database
+    const media = await prisma.media.create({
+      data: {
+        filename: normalizedFileName,
+        mimetype: file.mimetype,
+        size: file.size,
+        path: path.join(uploadDir, normalizedFileName),
+      },
+    });
+
+    // Add absolute url to the media object
+    await prisma.media.update({
+      where: {
+        id: media.id,
+      },
+      data: {
+        absoluteUrl: getAbsoluteUrl(media.id),
+      },
+    });
+
+    return media;
   });
 
   return media;
-};
-
-type DestroyProps = {
-  media: Media;
 };
 
 /**
@@ -86,31 +104,22 @@ const destroy = async ({ media }: DestroyProps) => {
   });
 };
 
-type GetMetaInformationsProps = {
-  media: Media;
-};
-
 /**
  * Get the meta informations of the file
  */
 const getMetaInformations = ({ media }: GetMetaInformationsProps) => {
   return {
-    relativeUrl: getMediaRelativeUrl({
-      media: media,
-    }),
+    relativeUrl: getAbsoluteUrl(media.id),
     filename: media.filename,
   };
 };
 
-type GetMediaPublicUrlProps = {
-  media: Media;
-};
-const getMediaAbsoluteUrl = ({ media }: GetMediaPublicUrlProps) => {
-  return `https://nginx/api/media/${media.id}`;
+const getAbsoluteUrl = (mediaId: string) => {
+  return `https://nginx/api/media/${mediaId}`;
 };
 
-const getMediaRelativeUrl = ({ media }: GetMediaPublicUrlProps) => {
-  return `/api/media/${media.id}`;
+const getRelativeUrl = (mediaId: string) => {
+  return `/api/media/${mediaId}`;
 };
 
 const normalizeFilename = (filename: string, appendRandom: boolean = true) => {
@@ -142,7 +151,7 @@ export default {
   store,
   normalizeFilename,
   destroy,
-  getMediaAbsoluteUrl,
-  getMediaRelativeUrl,
+  getAbsoluteUrl,
+  getRelativeUrl,
   getMetaInformations,
 };

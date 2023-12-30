@@ -26,7 +26,7 @@ const exceptionsMiddleware = (
     if (err.json) {
       return res.status(err.status).json(err.json);
     } else {
-      return res.status(err.status).json(err.message);
+      return res.status(err.status).json({ message: err.message });
     }
   }
 

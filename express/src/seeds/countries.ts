@@ -1,19 +1,17 @@
 import { prisma } from "@/src/providers/database/prisma";
-import axios from "axios";
+import { api } from "../lib/api";
 
 const main = async () => {
   console.log("Receiving data from geonames.org ...");
 
-  const data = await axios
-    .get("http://api.geonames.org/countryInfoJSON", {
-      params: {
-        username: "ghostlexly",
-        formatted: true,
-        style: "full",
-        lang: "en",
-      },
-    })
-    .then((res) => res.data);
+  const data = await api.get("http://api.geonames.org/countryInfoJSON", {
+    params: {
+      username: "ghostlexly",
+      formatted: "true",
+      style: "full",
+      lang: "FR",
+    },
+  });
 
   await prisma.$transaction(async (prisma) => {
     for (let i = 0; i < data.geonames.length; i++) {

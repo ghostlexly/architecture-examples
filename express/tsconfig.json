@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
+    "target": "ES5", // develop on this tech (allow await, imports etc.)
     "module": "commonjs", // transpile to commonjs on build
-    "target": "ES2017", // allow async/await on my project development
 
     "rootDir": ".", // set root dir for building
     "outDir": "dist", // set output dir for build files

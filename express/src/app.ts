@@ -1,49 +1,53 @@
-import dayjs from "dayjs";
-import utc from "dayjs/plugin/utc";
-import express from "express";
-import fileUpload from "express-fileupload";
-const port = 3000;
-require("dotenv").config();
 require("express-async-errors");
-
 import exceptionsMiddleware from "@/src/middlewares/exceptions.middleware";
 import unknownRoutesMiddleware from "@/src/middlewares/unknown-routes.middleware";
 import apiRouter from "@/src/routes";
-import { JwtGuard } from "./guards/jwt.guard";
+import dayjs from "dayjs";
+import "dayjs/locale/fr";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import utc from "dayjs/plugin/utc";
+import dotenv from "dotenv";
+import express from "express";
+import fileUpload from "express-fileupload";
+import paginationMiddleware from "./middlewares/pagination.middleware";
+import sortingMiddleware from "./middlewares/sorting.middleware";
 import { globalThrottler } from "./middlewares/throttler.middleware";
+import { sessionsGuard } from "./guards/sessions.guard";
+const port = 3000;
+require("express-async-errors");
+
+const app = express();
 
 async function bootstrap() {
-  // extends dayjs with plugins
-  dayjs.extend(utc);
+  // add .env variables to process.env
+  dotenv.config();
 
-  // --------------------
-  // We create a new express application instance
-  // ---------------------
-  const app = express();
+  // extends dayjs with plugins
+  dayjs.locale("fr");
+  dayjs.extend(utc);
+  dayjs.extend(customParseFormat);
+
+  // disable `x-powered-by` header for security reasons
   app.disable("x-powered-by");
 
-  // ----------------------------------------
-  // configure Expressjs to trust the X-Forwarded-For header
-  // ----------------------------------------
+  // Trust the `X-Forwarded-For` header for cloudflare and other reverse proxies
+  // to send the real IP address of the client by this header.
   app.set("trust proxy", true);
 
-  // ----------------------------------------
-  // enable files upload
-  // ----------------------------------------
-  app.use(fileUpload());
-
-  /**
-   * We parse the body of the request to be able to access it
-   * @example app.post('/', (req) => req.body.prop)
-   */
+  // We parse the body of the request to be able to access it
+  // @example: app.post('/', (req) => req.body.prop)
   app.use(express.json());
 
-  // ----------------------------------------
-  // get user from authorization token
-  // the user will be available in req.user
-  // this guard block all routes except the ones in the whitelist
-  // ----------------------------------------
-  app.use(JwtGuard);
+  // enable files upload
+  app.use(fileUpload());
+
+  app.use(sortingMiddleware);
+
+  app.use(paginationMiddleware);
+
+  // Block everything if the user is not authenticated and the route is not public
+  // get the user from the token and add it to the request (req.account)
+  app.use(sessionsGuard);
 
   // ----------------------------------------
   // Routes
@@ -54,7 +58,7 @@ async function bootstrap() {
 
   // ----------------------------------------
   // Errors handler
-  // /!\ Should be the last `app.use`
+  // @important: Should be the last `app.use`
   // ----------------------------------------
   app.use(exceptionsMiddleware);
 
@@ -64,3 +68,5 @@ async function bootstrap() {
 }
 
 bootstrap();
+
+export { app };
